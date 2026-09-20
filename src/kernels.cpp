@@ -1,3 +1,7 @@
+// Portions of the scalar GPT-2 kernels in this file are adapted from
+// karpathy/llm.c (MIT). C++20 refactoring and cached-attention work are part
+// of this project. See LICENSE and THIRD_PARTY_NOTICES.md.
+
 #include "gpt2/kernels.hpp"
 
 #include <algorithm>

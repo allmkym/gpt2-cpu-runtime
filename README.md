@@ -6,7 +6,7 @@ A C++20, FP32 inference runtime for GPT-2 checkpoints on a single CPU machine. I
 
 ## Project origin
 
-This repository is a separate C++20 follow-on project developed from the JYY OS 2026 M6 GPT-2 C inference exercise that I previously completed. It does not contain my original M6 submission or the course framework. The runtime extends that starting point with explicit C++ ownership and lifetime boundaries, incremental KV-cache inference, a persistent linear executor, and additional correctness and performance validation.
+This repository is a C++20 follow-on runtime derived from the GPT-2 CPU inference implementation in [karpathy/llm.c](https://github.com/karpathy/llm.c/tree/f1e2ace651495b74ae22d45d1723443fd00ecd3a), following the inference-focused subset used in JYY OS 2026 M6, which I previously completed as a C systems/concurrency exercise. It does not contain my original M6 submission or the course framework. The runtime adds explicit C++ ownership and lifetime boundaries, incremental KV-cache inference, a persistent linear executor, and additional correctness and performance validation.
 
 ## Engineering highlights
 
@@ -92,4 +92,8 @@ The first command reports full-prefix and cached generation, prefill, one decode
 
 The runtime is single-sequence and synchronous, with FP32 computation, greedy token selection, fixed cache capacity, and no text tokenization. It does not implement training, batching, quantization, BLAS integration, multi-row prefill, or a serving API.
 
-The checkpoint conventions and independent numerical reference are based on [karpathy/llm.c](https://github.com/karpathy/llm.c/tree/f1e2ace651495b74ae22d45d1723443fd00ecd3a). The incremental-state design also references [llama2.c](https://github.com/karpathy/llama2.c/tree/350e04fe35433e6d2941dce5a1f53308f87058eb) and [ggml](https://github.com/ggml-org/ggml/tree/7840aaba1989c6deeefede1d77d5aaf8f52b947e). Their source and license links are collected in [implementation notes](IMPLEMENTATION_NOTES.md).
+The checkpoint conventions, full-prefix computation, and independent numerical reference trace to [karpathy/llm.c](https://github.com/karpathy/llm.c/tree/f1e2ace651495b74ae22d45d1723443fd00ecd3a). The incremental-state design also references [llama2.c](https://github.com/karpathy/llama2.c/tree/350e04fe35433e6d2941dce5a1f53308f87058eb) and [ggml](https://github.com/ggml-org/ggml/tree/7840aaba1989c6deeefede1d77d5aaf8f52b947e). Detailed source and license notes are collected in [implementation notes](IMPLEMENTATION_NOTES.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+
+## License
+
+This project is released under the [MIT License](LICENSE). Portions adapted from `karpathy/llm.c` retain the upstream copyright and MIT notice; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

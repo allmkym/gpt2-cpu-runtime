@@ -1,3 +1,8 @@
+// GPT-2 checkpoint layout and full-prefix execution in this file are adapted
+// from karpathy/llm.c (MIT). The C++ ownership, lifetime, validation, and
+// error-handling structure is part of this project. See LICENSE and
+// THIRD_PARTY_NOTICES.md.
+
 #include "gpt2/model.hpp"
 
 #include "gpt2/kernels.hpp"
