@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ portfolio, master ]
+  pull_request:
+    branches: [ portfolio, master ]
+
+jobs:
+  build-and-test:
+    name: Release Build & Synthetic Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Configure CMake (Release)
+        run: cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build-release --parallel
+
+      - name: Run Synthetic Tests
+        run: ctest --test-dir build-release --output-on-failure
+
+  sanitizers:
+    name: ASan / UBSan Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Configure CMake (Sanitizers)
+        run: |
+          cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug \
+            -DGPT2_ENABLE_SANITIZERS=ON \
+            -DCMAKE_CXX_FLAGS_DEBUG="-D_GLIBCXX_ASSERTIONS"
+
+      - name: Build
+        run: cmake --build build-asan --parallel
+
+      - name: Run Tests with Sanitizers
+        env:
+          ASAN_OPTIONS: "detect_leaks=1:halt_on_error=1"
+          UBSAN_OPTIONS: "halt_on_error=1:print_stacktrace=1"
+        run: ctest --test-dir build-asan --output-on-failure
