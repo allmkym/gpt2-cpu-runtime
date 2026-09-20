@@ -54,7 +54,7 @@ The runtime uses FP32, batch size 1, token-ID I/O, greedy decoding, fixed cache 
 ## External references
 
 - GPT-2 checkpoint conventions and independent CPU numerical oracle: [karpathy/llm.c at the pinned commit](https://github.com/karpathy/llm.c/tree/f1e2ace651495b74ae22d45d1723443fd00ecd3a) and its [MIT license](https://github.com/karpathy/llm.c/blob/f1e2ace651495b74ae22d45d1723443fd00ecd3a/LICENSE).
-- Earlier C implementation and profiling context: [JYY OS 2026 M6](https://git.nju.edu.cn/jyy/os2026), `M6:gpt/gpt.c`.
+- Course exercise context and inference-focused subset of `llm.c`: [JYY OS 2026 M6](https://git.nju.edu.cn/jyy/os2026), `M6:gpt/gpt.c`.
 - Fixed-capacity incremental-state design reference: [karpathy/llama2.c](https://github.com/karpathy/llama2.c/tree/350e04fe35433e6d2941dce5a1f53308f87058eb) and its [MIT license](https://github.com/karpathy/llama2.c/blob/350e04fe35433e6d2941dce5a1f53308f87058eb/LICENSE).
 - GPT-2 past-positioning design reference: [ggml](https://github.com/ggml-org/ggml/tree/7840aaba1989c6deeefede1d77d5aaf8f52b947e) and its [MIT license](https://github.com/ggml-org/ggml/blob/7840aaba1989c6deeefede1d77d5aaf8f52b947e/LICENSE).
 

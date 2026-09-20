@@ -26,9 +26,9 @@
 | Full-prefix → scalar cached generation（M2） | 2924.550 ms | 583.515 ms | 5.012× |
 | Cached generation，1 → 8 total threads（final M3） | 576.633 ms | 146.304 ms | 3.941× |
 
-这两组数据来自不同实验，不能相乘，也不能视为同一个 factorial comparison。M2 的提升来自整条 cached path 的综合变化，包括 KV reuse、one-token execution 和 last-position real-vocabulary projection；M3 则是在同一 build 下，对可选 parallel LinearExecutor 进行 1 与 8 total threads 的对比。每组 median 均采用 1 次 warmup 和 5 次 timed repetitions。Model loading、session creation、executor construction、logging 和 logits dump 均不计入 generation timing。
+这两组数据来自不同实验，不能相乘，也不能视为同一个 factorial comparison。M2 的提升来自整条 cached path 的综合变化，包括 KV reuse、one-token execution 和 last-position real-vocabulary projection；M3 则是在同一 build 下，对可选 parallel `LinearExecutor` 进行 1-thread 与 8-total-thread 对比。每组 median 均采用 1 次 warmup 和 5 次 timed repetitions。Model loading、session creation、executor construction、logging 和 logits dump 均不计入 generation timing。
 
-M3 的 thread-count sweep 测试了 1、2、4、8、16 total threads；在这组 workload 上 8 threads 最快，而 16 threads 出现 regression。因此这些结果只是该机器和该 workload 下的 bounded local measurements，不应视为 portable thread-count recommendation。Raw samples 和额外 workload 见 [实现与验证说明](IMPLEMENTATION_NOTES.md) 与 [M3 结果记录](docs/MILESTONE3_RESULTS.md)。
+M3 的 thread-count sweep 测试了 1、2、4、8、16 total threads；在这组 workload 上 8 threads 最快，而 16 threads 出现 regression。因此这些结果只代表这台机器和该 workload 下的 bounded local measurements，不应视为 portable thread-count recommendation。Raw samples 和额外 workload 见 [实现与验证说明](IMPLEMENTATION_NOTES.md) 与 [M3 结果记录](docs/MILESTONE3_RESULTS.md)。
 
 ## 构建与运行
 
@@ -72,11 +72,11 @@ ctest --test-dir build-release --output-on-failure
 
 ## Design / Correctness
 
-`GPT2Model::forward` 会重新计算完整 input prefix，并返回指向 caller-owned workspace 的 view。`InferenceSession` borrows 已有 model，同时自行持有 KV cache、one-token scratch 和 last-position real-vocabulary logits。model 的 lifetime 必须长于其 sessions，并且在 session 存活期间不能被 moved。单个 session 不支持 concurrent calls；后续 mutating call 会覆盖此前返回的 logits view。
+`GPT2Model::forward` 会重新计算完整 input prefix，并返回指向 caller-owned workspace 的 view。`InferenceSession` 借用已有 model，同时自行持有 KV cache、one-token scratch 和 last-position real-vocabulary logits。model 的 lifetime 必须覆盖所有 session，且 session 存活期间不能移动 model。单个 session 不支持 concurrent calls；后续 mutating call 会覆盖此前返回的 logits view。
 
-session 的 cache layout 为独立连续 K/V vectors 中的 `[layer][position][channel]`，capacity 在 construction 时固定。`prefill` 会先 validate 整个 prompt，再开始 computation，并且只有成功后才 publish consumed length；`decode` 会在下一个 available position append token。每个 token 的 Q 只会 attend 其 visible prefix 中的 K/V，并包含当前位置自身。
+session 的 cache layout 为独立连续 K/V vectors 中的 `[layer][position][channel]`，capacity 在 construction 时固定。`prefill` 会先校验完整 prompt，再开始计算，并且只有成功后才更新 consumed length；`decode` 会在下一个 available position 追加 token。每个 token 的 Q 只对 visible prefix 中的 K/V 做 attention，并包含当前位置自身。
 
-parallel executor 只会在同步的 `prefill` 或 `decode` call 期间被 borrowed。每个 Linear job 按 output channels 划分为 disjoint ranges，并在 return 或 propagate exception 之前等待所有 worker 完成。full-prefix path、attention、LayerNorm、GELU，以及 token-by-token prefill 不会因为 executor 而改变。
+parallel executor 只会在同步的 `prefill` 或 `decode` call 期间被借用。每个 Linear job 按 output channels 划分为 disjoint ranges，并在返回或传播 exception 之前等待所有 worker 完成。full-prefix path、attention、LayerNorm、GELU，以及 token-by-token prefill 不会因为 executor 而改变。
 
 对于固定 prefix `15496,11,616`，full-prefix logits 在全部 50,257 个 real-vocabulary values 上与固定版本的 upstream `llm.c` oracle byte-identical；8-thread cached logits 与 full-prefix logits 也 byte-identical。另一个 real-checkpoint test 在 prefix lengths 1、3、4、5 处比较了 4-thread cached 与 full-prefix logits。更精确的 contracts 与 validation boundaries 见 [实现与验证说明](IMPLEMENTATION_NOTES.md)、[M2 设计记录](docs/MILESTONE2_DESIGN.md) 和 [M3 设计记录](docs/MILESTONE3_DESIGN.md)。
 
@@ -90,7 +90,7 @@ parallel executor 只会在同步的 `prefill` 或 `decode` call 期间被 borro
 ./build-release/gpt2_linear_benchmark "$CHECKPOINT" 1 5 8 8
 ```
 
-第一个命令会报告 full-prefix / cached generation、prefill、one decode，以及 separately timed setup / projection probes。第二个命令测试 single-row Linear shapes；最后一个参数表示 total thread count。比较不同 thread counts 时应保持相同 build 和 workload。
+第一个命令会报告 full-prefix / cached generation、prefill、one decode，以及单独计时的 setup / projection probes。第二个命令测试 single-row Linear shapes；最后一个参数表示 total thread count。比较不同 thread counts 时应保持相同 build 和 workload。
 
 ## Scope / References
 
