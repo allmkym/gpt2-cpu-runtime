@@ -1,6 +1,12 @@
 # GPT-2 CPU Inference Runtime
 
+[![CI](https://github.com/allmkym/gpt2-cpu-runtime/actions/workflows/ci.yml/badge.svg?branch=portfolio)](https://github.com/allmkym/gpt2-cpu-runtime/actions/workflows/ci.yml)
+
 A C++20, FP32 inference runtime for GPT-2 checkpoints on a single CPU machine. It provides a full-prefix correctness baseline, an incremental KV-cache path, and an optional persistent worker executor for single-row linear layers. Input and output are token IDs; the repository does not include model weights or a tokenizer.
+
+## Project origin
+
+This repository is a separate C++20 follow-on project developed from the JYY OS 2026 M6 GPT-2 C inference exercise that I previously completed. It does not contain my original M6 submission or the course framework. The runtime extends that starting point with explicit C++ ownership and lifetime boundaries, incremental KV-cache inference, a persistent linear executor, and additional correctness and performance validation.
 
 ## Engineering highlights
 
@@ -9,16 +15,16 @@ A C++20, FP32 inference runtime for GPT-2 checkpoints on a single CPU machine. I
 - **Bounded parallelism:** `LinearExecutor` keeps `N-1` workers for `N` total threads, with the caller computing one output shard. Disjoint output-channel ranges retain each channel's scalar accumulation order. Small jobs use the scalar kernel.
 - **Numerical checks:** synthetic tests, real-checkpoint comparisons, and an independent pinned `llm.c` oracle compare complete logits vectors, rather than only generated token IDs.
 
-## Measured result
+## Measured results
 
-On an Intel Core i7-14700HX under WSL2, GCC 15.2 Release, GPT-2 124M, a 3-token prompt and 8 generated tokens, the final M3 build measured:
+On an Intel Core i7-14700HX under WSL2 with GCC 15.2 Release, GPT-2 124M, a 3-token prompt and 8 generated tokens, the recorded M2/M3 measurements include:
 
-| Cached generation | Median wall time | Comparison |
-|---|---:|---:|
-| 1 total thread | 576.633 ms | baseline |
-| 8 total threads | 146.304 ms | 3.941× faster |
+| Experiment | Baseline median | Optimized median | Ratio |
+|---|---:|---:|---:|
+| Full-prefix → scalar cached generation (M2) | 2924.550 ms | 583.515 ms | 5.012× |
+| Cached generation, 1 → 8 total threads (final M3) | 576.633 ms | 146.304 ms | 3.941× |
 
-Each median used one warmup and five timed repetitions. Model loading, session creation, executor construction, logging, and logits dumps were outside the generation timing. Eight threads were best among 1, 2, 4, 8, and 16 in this workload; 16 regressed. These results describe this CPU, build, checkpoint, and input, not a portable thread-count recommendation. Raw samples and additional workloads are in [M3 results](docs/MILESTONE3_RESULTS.md).
+These are two distinct experiments and should not be multiplied or treated as a factorial comparison. The M2 result reflects the combined cached path (KV reuse, one-token execution, and last-position real-vocabulary projection); the M3 result is a same-build 1-vs-8-thread comparison for the optional parallel linear executor. Each median used one warmup and five timed repetitions. Model loading, session creation, executor construction, logging, and logits dumps were outside generation timing. In the M3 thread-count sweep, 8 threads were best among 1, 2, 4, 8, and 16 for this workload, while 16 regressed. These are bounded local measurements, not portable thread-count recommendations. Raw samples and additional workloads are in [implementation notes](IMPLEMENTATION_NOTES.md) and [M3 results](docs/MILESTONE3_RESULTS.md).
 
 ## Build and run
 
