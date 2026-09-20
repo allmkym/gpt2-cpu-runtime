@@ -1,6 +1,6 @@
 # GPT-2 CPU Inference Runtime
 
-[![CI](https://github.com/allmkym/gpt2-cpu-runtime/actions/workflows/ci.yml/badge.svg?branch=portfolio)](https://github.com/allmkym/gpt2-cpu-runtime/actions/workflows/ci.yml)
+[![CI](https://github.com/allmkym/gpt2-cpu-runtime/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/allmkym/gpt2-cpu-runtime/actions/workflows/ci.yml)
 
 A C++20, FP32 inference runtime for GPT-2 checkpoints on a single CPU machine. It provides a full-prefix correctness baseline, an incremental KV-cache path, and an optional persistent worker executor for single-row linear layers. Input and output are token IDs; the repository does not include model weights or a tokenizer.
 
