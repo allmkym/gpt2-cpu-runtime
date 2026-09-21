@@ -63,11 +63,12 @@ This is not a generic task scheduler: no arbitrary jobs, futures, async queue,
 work stealing, nested submission, or parallel attention. There are no SIMD
 intrinsics, BLAS calls, multi-request batching, or block-prefill changes.
 
-## Thread-count selection
+## Thread-count measurements
 
-The tested counts were 1, 2, 4, 8, and 16 total threads. Eight was best for
-the primary workload; 16 regressed, and per-shape gains are uneven. The API
-therefore remains explicit/opt-in with one thread as its default. The complete
-commands, raw samples, numeric checks, and sanitizer outcomes are in
-[`MILESTONE3_RESULTS.md`](MILESTONE3_RESULTS.md). This result is local to the
-measured CPU and build and does not justify a portable default thread count.
+Multiple total thread counts were measured during M3. The summary performance
+result uses the final same-build 1-vs-8-thread comparison, while the API remains
+explicit/opt-in with one thread as its default. The complete sweep commands,
+raw samples, numeric checks, and sanitizer outcomes are in
+[`MILESTONE3_RESULTS.md`](MILESTONE3_RESULTS.md). These measurements are local
+to the recorded CPU, build, and workload and do not justify a portable default
+thread count.

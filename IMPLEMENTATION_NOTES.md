@@ -45,7 +45,7 @@ The following measurements were made on an Intel Core i7-14700HX under WSL2 with
 | Full-prefix vs scalar cached, earlier M2 build | 2924.550 vs 583.515 ms | 5.012× | Combined effect of KV reuse, one-token execution, and last-position real-vocabulary projection. |
 | Cached 1 vs 8 total threads, final M3 build | 576.633 vs 146.304 ms | 3.941× | Same-build comparison for optional parallel linear work. |
 
-These are distinct experiments and should not be combined as if they were one factorial benchmark. The M3 thread-count sweep tested 1, 2, 4, 8, and 16; eight was best for this workload, while sixteen regressed. The per-thread small-job guard is 65,536 weight floats, so some shapes return to scalar execution at higher thread counts. See [M3 results](docs/MILESTONE3_RESULTS.md) for raw samples, a longer-prompt workload, per-shape measurements, commands, and complete environment details.
+These are distinct experiments and should not be combined as if they were one factorial benchmark. See [M3 results](docs/MILESTONE3_RESULTS.md) for the thread-count sweep, raw samples, a longer-prompt workload, per-shape measurements, commands, and complete environment details.
 
 ## Scope
 

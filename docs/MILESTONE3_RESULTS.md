@@ -102,9 +102,8 @@ separate run of the M3 build.
 | 16 | vocabulary | 3.076, 2.899, 2.725, 2.694, 2.700 | 2.725 |
 
 Estimated linear time per token by thread count: 1 = 55.301 ms, 2 = 29.844,
-4 = 18.418, 8 = 14.872, 16 = 15.656. At 16 threads, the attention projection
-falls under the small-job threshold and uses the scalar kernel. Increasing
-thread count therefore does not monotonically improve the whole decode.
+4 = 18.418, 8 = 14.872, 16 = 15.656. These estimates are descriptive results
+from this sweep and are not a portable thread-count recommendation.
 
 ## Primary end-to-end workload: P=3, G=8
 
@@ -177,9 +176,9 @@ The same-build 1-to-8 comparisons are 3.862× for prefill, 3.962× for one
 decode, and 4.181× for cached generation. Compared with the pre-change M2
 scalar cached median, 8 threads gives 574.306/143.352 = 4.006×. The latter
 uses separate sequential runs and is subject to drift: the M3 build's own
-one-thread median was 599.313 ms. Sixteen threads were 16.9% slower than eight
-for cached generation. The full-prefix path was not parallelized; its timed
-samples are provided as a correctness/reference workload, not as M3's gain.
+one-thread median was 599.313 ms. The full-prefix path was not parallelized;
+its timed samples are provided as a correctness/reference workload, not as
+M3's gain.
 
 After serializing the scalar fallback under the same submission lock, the
 primary full benchmark command was rerun at 1 and 8 threads on the final

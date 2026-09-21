@@ -28,7 +28,7 @@
 
 这两组数据来自不同实验，不能相乘，也不能视为同一个 factorial comparison。M2 的提升来自整条 cached path 的综合变化，包括 KV reuse、one-token execution 和 last-position real-vocabulary projection；M3 则是在同一 build 下，对可选 parallel `LinearExecutor` 进行 1-thread 与 8-total-thread 对比。每组 median 均采用 1 次 warmup 和 5 次 timed repetitions。Model loading、session creation、executor construction、logging 和 logits dump 均不计入 generation timing。
 
-M3 的 thread-count sweep 测试了 1、2、4、8、16 total threads；在这组 workload 上 8 threads 最快，而 16 threads 出现 regression。因此这些结果只代表这台机器和该 workload 下的 bounded local measurements，不应视为 portable thread-count recommendation。Raw samples 和额外 workload 见 [实现与验证说明](IMPLEMENTATION_NOTES.md) 与 [M3 结果记录](docs/MILESTONE3_RESULTS.md)。
+这些结果只代表这台机器和该 workload 下的 bounded local measurements，不应视为 portable thread-count recommendation。Raw samples 和额外 workload 见 [实现与验证说明](IMPLEMENTATION_NOTES.md) 与 [M3 结果记录](docs/MILESTONE3_RESULTS.md)。
 
 ## 构建与运行
 
